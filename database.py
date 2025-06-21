@@ -15,7 +15,7 @@ def creazioneDatabase():
         url_cryptopanic VARCHAR(512),
         url_articolo VARCHAR(512),
         data DATE,
-        categoria VARCHAR(100),
+        categoria VARCHAR(100)
     );
     """)
 

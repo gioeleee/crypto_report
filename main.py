@@ -1,3 +1,7 @@
-from database import database
+import database
+import fetchArticoli
 
-database.creazioneDatabase()
+#funzione per creare il database se non esiste - da eseguire una sola volta
+#database.creazioneDatabase()
+
+fetchArticoli.fetchUrlArticoliCryptopanic()

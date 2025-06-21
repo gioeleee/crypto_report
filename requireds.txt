@@ -1,2 +1,8 @@
 -Librerie richieste:
     - sqlite3 #per gestione db sqlite
+    - pip install selenium #per controllo del browser crome
+    - pip install webdriver-manager #per gestire automaticamente il ChromeDriver
+    - pip install beautifulsoup4  #per analizzare l'HTML
+    - pip install lxml #per parsing HTML più veloce
+
+
