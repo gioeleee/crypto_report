@@ -1,0 +1,2 @@
+-Librerie richieste:
+    - sqlite3 #per gestione db sqlite
