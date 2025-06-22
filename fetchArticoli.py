@@ -227,5 +227,63 @@ def fetchUrlArticoli():
             database.aggiorna_url_originale(id_articolo, url_articolo)
         else:
             print(f"⚠️ Nessun URL trovato per {url_cryptopanic}")
+            database.aggiorna_url_originale(id_articolo, "NESSUN CONTENUTO")
 
         time.sleep(1.5)  # Rate limiting
+
+
+def fetch_html_content(url):
+    chrome_options = Options()
+    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+    chrome_options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
+    try:
+        driver.get(url)
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.TAG_NAME, "body"))
+        )
+        return driver.page_source
+
+    except Exception as e:
+        print(f"❌ Errore durante il download HTML da {url}: {e}")
+        return None
+
+    finally:
+        driver.quit()
+
+
+
+def fetch_and_process_html_articoli():
+    from database import get_articoli_da_processare_html, salva_html_articolo
+    from cleanHtml import clean_html_content
+
+    articoli = get_articoli_da_processare_html()
+    if not articoli:
+        print("✅ Tutti gli articoli sono già stati elaborati.")
+        return
+
+    for id_articolo, url_articolo in articoli:
+        print(f"\n🔍 Elaborazione articolo ID {id_articolo}")
+
+        html = fetch_html_content(url_articolo)
+        if not html:
+            print("⚠️ HTML non disponibile.")
+            continue
+
+        pulito = clean_html_content(html)
+        if not pulito.strip():
+            print("⚠️ HTML pulito vuoto o non valido.")
+            continue
+
+        try:
+            salva_html_articolo(id_articolo, pulito)
+            print(f"✅ HTML salvato per articolo ID {id_articolo}")
+        except Exception as e:
+            print(f"❌ Errore nel salvataggio DB per articolo ID {id_articolo}: {e}")
+
+        time.sleep(1.5)  # rate limit

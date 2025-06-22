@@ -4,5 +4,10 @@
     - pip install webdriver-manager #per gestire automaticamente il ChromeDriver
     - pip install beautifulsoup4  #per analizzare l'HTML
     - pip install lxml #per parsing HTML più veloce
+    - pip install spacy
+        - con spacy bisogna installare anche il modello italiano python -m spacy download it_core_news_md
+    - pip install scikit-learn
+    - pip install sentence-transformers
+    - pip install langdetect
 
 

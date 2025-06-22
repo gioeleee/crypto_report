@@ -87,3 +87,29 @@ def aggiorna_url_originale(id_articolo, url_articolo):
     conn.commit()
     conn.close()
 
+
+
+def get_articoli_da_processare_html():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, url_articolo
+        FROM meta_articoli
+        WHERE url_articolo IS NOT NULL OR url_articolo!="NESSUN CONTENUTO"
+    """)
+    risultati = cursor.fetchall()
+    conn.close()
+    return risultati
+
+def salva_html_articolo(id_articolo, html_pulito):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE articoli
+        SET articolo_completo_html = ?
+        WHERE id = ?
+    """, (html_pulito, id_articolo))
+
+    conn.commit()
+    conn.close()
