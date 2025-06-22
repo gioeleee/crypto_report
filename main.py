@@ -5,4 +5,7 @@ import fetchArticoli
 database.creazioneDatabase()
 
 #Recuperiamo Titolo, data e url_cryptopanic
-fetchArticoli.fetchArticoliCryptopanic2()
+#fetchArticoli.fetchArticoliCryptopanic()
+
+#Recuperiamo url originale degli articoli
+fetchArticoli.fetchUrlArticoli()

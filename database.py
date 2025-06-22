@@ -63,3 +63,27 @@ def salvaArticoliCryptopanic(articoli):
     conn.close()
     print(f"✅ {nuovi} articoli nuovi salvati nel database.")
 
+
+def get_articoli_senza_url_originale():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, url_cryptopanic
+        FROM meta_articoli
+        WHERE url_articolo IS NULL
+    """)
+    risultati = cursor.fetchall()
+    conn.close()
+    return risultati
+
+def aggiorna_url_originale(id_articolo, url_articolo):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE meta_articoli
+        SET url_articolo = ?
+        WHERE id = ?
+    """, (url_articolo, id_articolo))
+    conn.commit()
+    conn.close()
+

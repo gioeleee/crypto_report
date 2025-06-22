@@ -130,7 +130,7 @@ def seleziona_feed_italiano(driver):
 
 
 
-
+### Funzione per estrarre gli articoli da cryptopanic, estrate titolo, url_cryptopanic e data
 def fetchArticoliCryptopanic():
     driver = setup_chrome_driver()
     driver.get(f"{BASE_URL}/news")
@@ -156,3 +156,76 @@ def fetchArticoliCryptopanic():
     articoli_ordinati = ordina_articoli_per_data(articoli)
 
     database.salvaArticoliCryptopanic(articoli_ordinati)
+
+
+
+def get_original_url(cryptopanic_url):
+    chrome_options = Options()
+    # chrome_options.add_argument("--headless=new")  # Abilita in produzione
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+    chrome_options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
+
+    for attempt in range(3):
+        try:
+            driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+            driver.get(cryptopanic_url)
+
+            # Attendi che il link al titolo sia cliccabile
+            WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "h1.post-title span.text"))
+            )
+
+            article_title = driver.find_element(By.CSS_SELECTOR, "h1.post-title span.text")
+            print(f"📰 Titolo trovato: {article_title.text}")
+
+            # Scroll e click tramite JS
+            driver.execute_script("arguments[0].scrollIntoView(true);", article_title)
+            time.sleep(0.5)
+            driver.execute_script("arguments[0].click();", article_title)
+            time.sleep(2)
+
+            # Passa alla nuova scheda
+            if len(driver.window_handles) > 1:
+                driver.switch_to.window(driver.window_handles[1])
+                time.sleep(2)
+
+            return driver.current_url
+
+        except Exception as e:
+            print(f"❌ Errore al tentativo {attempt+1} per {cryptopanic_url}: {e}")
+        finally:
+            try:
+                driver.quit()
+            except:
+                pass
+
+        time.sleep(2)
+
+    return None
+
+
+
+### Funzione per estrarre gli url originali degli articoli
+def fetchUrlArticoli():
+    articoli = database.get_articoli_senza_url_originale()
+
+    if not articoli:
+        print("✅ Nessun articolo da aggiornare.")
+        return
+
+    print(f"🔍 Trovati {len(articoli)} articoli da elaborare.")
+
+    for id_articolo, url_cryptopanic in articoli:
+        print(f"\n🔄 Elaborazione articolo ID {id_articolo}...")
+
+        url_articolo = get_original_url(url_cryptopanic)
+
+        if url_articolo:
+            print(f"✅ URL originale trovato: {url_articolo}")
+            database.aggiorna_url_originale(id_articolo, url_articolo)
+        else:
+            print(f"⚠️ Nessun URL trovato per {url_cryptopanic}")
+
+        time.sleep(1.5)  # Rate limiting
