@@ -2,7 +2,8 @@ import sqlite3
 
 DB_PATH = "crypto_news.db"
 
-#funzione per la creazione del database
+
+# Creazione database
 def creazioneDatabase():
     
     conn = sqlite3.connect(DB_PATH)
@@ -31,9 +32,9 @@ def creazioneDatabase():
     );
     """)
 
-    print(f"✅ Database creato se non esiste!")
-
-
+    conn.commit()
+    conn.close()
+    print(f"✅ Database creato correttamente (se non esiste già) !")
 
 
 ### Gestisce l'inserimento di uno più articoli dei campi : titolo, data, url_cryptopanic

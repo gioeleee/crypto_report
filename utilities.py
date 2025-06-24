@@ -9,3 +9,11 @@ def convert_to_sql_datetime(datetime_str):
     except Exception as e:
         print(f"❌ Errore nella conversione della data: {datetime_str} → {e}")
         return None
+
+# Ordina la lista di articoli per data crescente (dal più vecchio).
+def ordina_articoli_per_data(articoli):
+    """Ordina la lista di articoli per data crescente (dal più vecchio)."""
+    return sorted(
+        [a for a in articoli if a[1] is not None],  # Filtra gli articoli che hanno `data` valida (non None)
+        key=lambda x: x[1]                          # Ordina per la data (secondo elemento della tupla [1])
+    )
