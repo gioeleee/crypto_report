@@ -12,6 +12,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 import database
 import utilities
 import cleanHtml
+import uuid
 
 BASE_URL = "https://cryptopanic.com"
 
@@ -28,6 +29,10 @@ def setup_chrome_driver():
     chrome_options.add_argument("--no-sandbox")
     # Imposta uno user-agent realistico per evitare blocchi da parte dei siti web
     chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+
+    #Usa una cartella temporanea diversa per ogni esecuzione
+    chrome_options.add_argument(f"--user-data-dir=/tmp/chrome-user-data-{uuid.uuid4()}")
+
     # (Facoltativo) Usa una cartella temporanea come profilo utente per sessioni isolate
     #chrome_options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
     # Attiva modalità headless se necessario (non mostra il browser a schermo)
@@ -142,6 +147,9 @@ def seleziona_feed_italiano(driver):
         print("✅ Feed impostato su solo Italiano.")
     except Exception as e:
         print(f"❌ Errore nel filtrare solo italiano: {e}")
+    
+    # Aspetta tre secondi in modo tale che saranno caricati solo gli articoli in italiano
+    time.sleep(3)
 
 ### FUNZIONE PRINCIPALE: estrae gli articoli da cryptopanic: titolo, url_cryptopanic e data
 def fetch_articoli_cryptopanic():
@@ -292,21 +300,24 @@ def fetch_contenuto_html_articoli():
     for id_articolo, url_articolo in articoli:
         print(f"\n🔍 Elaborazione articolo ID {id_articolo}")
 
-        html = fetch_html_articolo(driver, url_articolo)
-        if not html:
+        contenuto_html = fetch_html_articolo(driver, url_articolo)
+        if not contenuto_html:
             print("⚠️ HTML non disponibile.")
+            database.salva_html_articolo(id_articolo, "NESSUN CONTENUTO")
             continue
 
-        pulito = cleanHtml.clean_html_content(html)
-        if not pulito.strip():
+        contenuto_html_pulito = cleanHtml.clean_html_content(contenuto_html)
+        if not contenuto_html_pulito.strip():
             print("⚠️ HTML pulito vuoto o non valido.")
+            database.salva_html_articolo(id_articolo, "NESSUN CONTENUTO")
             continue
 
         try:
-            database.salva_html_articolo(id_articolo, pulito)
-            print(f"✅ HTML salvato per articolo ID {id_articolo}")
+            database.salva_html_articolo(id_articolo, contenuto_html_pulito)
+            print(f"✅ Contenuto salvato per articolo ID {id_articolo}")
         except Exception as e:
             print(f"❌ Errore nel salvataggio DB per articolo ID {id_articolo}: {e}")
+            database.salva_html_articolo(id_articolo, "NESSUN CONTENUTO")
 
         time.sleep(1.5)  # Rate limiting
 

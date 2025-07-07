@@ -28,6 +28,7 @@ def creazioneDatabase():
         articolo_completo_html TEXT,  
         riassunto_breve TEXT,
         riassunto_lungo TEXT,
+        categoria VARCHAR(250),
         FOREIGN KEY (id) REFERENCES articoli_meta(id) ON DELETE CASCADE
     );
     """)
@@ -114,3 +115,56 @@ def salva_html_articolo(id_articolo, html_pulito):
 
     conn.commit()
     conn.close()
+
+
+# Restituisce una lista di articoli (id, contenuto html) che non sono ancora stati riassunti.
+def ottieni_articoli_da_riassumere():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, articolo_completo_html
+        FROM articoli
+        WHERE articolo_completo_html IS NOT NULL AND articolo_completo_html !="NESSUN CONTENUTO"
+          AND (riassunto_breve IS NULL OR riassunto_lungo IS NULL)
+    """)
+
+    articoli = cursor.fetchall()
+    conn.close()
+    return articoli
+
+# Restituisce una lista di articoli (id, contenuto html) che non sono ancora stati riassunti.
+def salva_riassunto_articolo(id_articolo, riassunto_breve, riassunto_lungo):
+    """
+    Salva i riassunti breve e lungo per un articolo dato il suo ID.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE articoli
+        SET riassunto_breve = ?, riassunto_lungo = ?
+        WHERE id = ?
+    """, (riassunto_breve, riassunto_lungo, id_articolo))
+
+    conn.commit()
+    conn.close()
+
+
+def reset_riassunti_articolo():
+    """
+    Imposta a NULL i valori di riassunto_breve e riassunto_lungo
+    per l'articolo corrispondente a id_articolo.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE articoli
+            SET riassunto_breve = NULL,
+                riassunto_lungo = NULL
+        """)
+        conn.commit()
+    finally:
+        conn.close()
