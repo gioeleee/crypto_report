@@ -9,11 +9,15 @@ import classificazione.classificazioneNB
 #Recuperiamo nuovi articoli: Titolo, data e url_cryptopanic
 fetchArticoli.fetch_articoli_cryptopanic()
 
+    ###Procedura precedente con recupero url e recupero contentuto separati
 #Recuperiamo url originale degli articoli
-fetchArticoli.fetch_url_articoli()
-
+###fetchArticoli.fetch_url_articoli()
 #Recuperiamo il contenuto dell'articolo dall' url originale
-fetchArticoli.fetch_contenuto_html_articoli()
+###fetchArticoli.fetch_contenuto_html_articoli()
+
+#Recuperiamo url originale degli articoli e il contenuto dell' articolo
+fetchArticoli.fetch_url_e_html_articoli()
+
 
 ### Aggiungere quy query per impostare riassunto_breve e riassunto_lungo a NESSUN CONTENUTO se articolo_html contiene NESSU CONTENUTO
 

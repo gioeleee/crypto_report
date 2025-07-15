@@ -220,7 +220,7 @@ def scraping_url_articoli(driver, cryptopanic_url):
         new_tabs = [tab for tab in driver.window_handles if tab != original_window]
         if new_tabs:
             driver.switch_to.window(new_tabs[0])
-            time.sleep(2)
+            time.sleep(5)
             article_url = driver.current_url
             driver.close()  # ❌ chiude la scheda appena aperta
             driver.switch_to.window(original_window)  # 🔁 torna alla scheda principale
@@ -324,4 +324,72 @@ def fetch_contenuto_html_articoli():
     # Chiude il WebDriver dopo aver processato tutti gli articoli
     driver.quit()
     print("\n🏁 Completato il salvataggio di tutti gli HTML.")
+
+
+### Funzione per estrarre l'url originale e il contenuto degli articoli
+def fetch_url_e_html_articoli():
+    articoli = database.get_articoli_senza_url_originale()
+    if not articoli:
+        print("✅ Nessun articolo da aggiornare.")
+        return
+
+    print(f"🔍 Trovati {len(articoli)} articoli da processare (URL + contenuto).")
+
+    driver = setup_chrome_driver()
+
+    for id_articolo, url_cryptopanic in articoli:
+        print(f"\n🔄 Articolo ID {id_articolo}")
+
+        # Step 1: Accedi a CryptoPanic e clicca sul titolo
+        url_articolo = None
+        contenuto_html_pulito = None
+
+        try:
+            driver.get(url_cryptopanic)
+
+            WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "h1.post-title span.text"))
+            )
+            article_title = driver.find_element(By.CSS_SELECTOR, "h1.post-title span.text")
+            driver.execute_script("arguments[0].scrollIntoView(true);", article_title)
+            driver.execute_script("arguments[0].click();", article_title)
+            time.sleep(2)
+
+            original_window = driver.current_window_handle
+            WebDriverWait(driver, 5).until(lambda d: len(d.window_handles) > 1)
+            new_tab = [w for w in driver.window_handles if w != original_window][0]
+
+            driver.switch_to.window(new_tab)
+            time.sleep(3)
+
+            url_articolo = driver.current_url
+            contenuto_html = driver.page_source
+
+            contenuto_html_pulito = cleanHtml.clean_html_content(contenuto_html)
+
+            driver.close()
+            driver.switch_to.window(original_window)
+
+        except Exception as e:
+            print(f"❌ Errore durante l'accesso o estrazione: {e}")
+
+        # Step 2: Salvataggio dei dati
+        if url_articolo:
+            database.aggiorna_url_originale(id_articolo, url_articolo)
+        else:
+            url_articolo = "NESSUN CONTENUTO"
+            database.aggiorna_url_originale(id_articolo, url_articolo)
+
+        if contenuto_html_pulito and contenuto_html_pulito.strip():
+            database.salva_html_articolo(id_articolo, contenuto_html_pulito)
+            print(f"✅ Contenuto HTML salvato")
+        else:
+            database.salva_html_articolo(id_articolo, "NESSUN CONTENUTO")
+            print("⚠️ Contenuto HTML mancante o vuoto")
+
+        time.sleep(1.5)
+
+    driver.quit()
+    print("🏁 Operazione completata per tutti gli articoli.")
+
 

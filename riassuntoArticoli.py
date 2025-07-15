@@ -4,7 +4,7 @@ import re
 import database
 
 # Inserisci l’URL aggiornato dell’API
-API_URL = "https://c69a-34-32-213-122.ngrok-free.app/generate_summaries/"
+API_URL = "https://2923a93170d3.ngrok-free.app/generate_summaries/"
 
 def pulisci_testo_incompleto(text):
     """
