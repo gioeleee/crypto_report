@@ -13,12 +13,14 @@ import database
 import utilities
 import cleanHtml
 import uuid
+import pathlib
 
 BASE_URL = "https://cryptopanic.com"
 
 
 # Crea e restituisce un'istanza di Chrome WebDriver configurata.
-def setup_chrome_driver():
+# precedente
+def setup_chrome_driver2():
     
     # Inizializzia istanza opzioni di Chrome WebDriver
     chrome_options = Options()
@@ -40,6 +42,51 @@ def setup_chrome_driver():
 
     # Restituisce istanza ChromeDriver con le opzioni configurate
     return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+
+
+# attuale per bypassare verifica umana
+def setup_chrome_driver(profile_name="selenium-profile"):
+    chrome_options = Options()
+
+    # Esegui in modalità "headed" (più affidabile per prime visite/consensi)
+    # chrome_options.add_argument("--headless=new")  # attivalo solo dopo aver stabilito i cookie
+
+    # Evita sandbox solo in ambienti container
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-gpu")
+
+    # User-Agent realistico (versione completa)
+    chrome_options.add_argument(
+        "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/126.0.0.0 Safari/537.36"
+    )
+
+    # Lingua/localizzazione
+    chrome_options.add_argument("--lang=it-IT")
+    chrome_options.add_experimental_option(
+        "prefs", {
+            "intl.accept_languages": "it-IT,it",
+            "profile.default_content_setting_values.cookies": 1,
+            "profile.block_third_party_cookies": False,
+        }
+    )
+
+    # Viewport coerente
+    chrome_options.add_argument("--window-size=1366,768")
+
+    # ✅ PROFILO PERSISTENTE (non cambiare ogni volta)
+    profile_dir = pathlib.Path.home() / ".selenium" / profile_name
+    profile_dir.mkdir(parents=True, exist_ok=True)
+    chrome_options.add_argument(f"--user-data-dir={profile_dir}")
+
+    # Avvio driver
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    driver.set_page_load_timeout(60)
+    return driver
+
+
+
 
 
 # Esegue lo scroll e clicca 'Load more' fino a quando non ci sono più nuovi articoli.
@@ -360,7 +407,7 @@ def fetch_url_e_html_articoli():
             new_tab = [w for w in driver.window_handles if w != original_window][0]
 
             driver.switch_to.window(new_tab)
-            time.sleep(3)
+            time.sleep(10) #3 precedentemente
 
             url_articolo = driver.current_url
             contenuto_html = driver.page_source

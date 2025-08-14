@@ -3,13 +3,13 @@ import fetchArticoli
 import riassuntoArticoli
 import classificazione.classificazioneNB
 
-#funzione per creare il database se non esiste - da eseguire una sola volta
+#NON AVVIARE - funzione per creare il database se non esiste - da eseguire una sola volta
 #database.creazioneDatabase()
 
 #Recuperiamo nuovi articoli: Titolo, data e url_cryptopanic
-fetchArticoli.fetch_articoli_cryptopanic()
+#fetchArticoli.fetch_articoli_cryptopanic()
 
-    ###Procedura precedente con recupero url e recupero contentuto separati
+    ###NON AVVIARE - Procedura precedente con recupero url e recupero contentuto separati
 #Recuperiamo url originale degli articoli
 ###fetchArticoli.fetch_url_articoli()
 #Recuperiamo il contenuto dell'articolo dall' url originale
@@ -22,9 +22,9 @@ fetchArticoli.fetch_url_e_html_articoli()
 ### Aggiungere quy query per impostare riassunto_breve e riassunto_lungo a NESSUN CONTENUTO se articolo_html contiene NESSU CONTENUTO
 
 #Generiamo e salvaiamo il riassutno lungo e corto per gli articoli
-riassuntoArticoli.riassunto_articoli()
+#riassuntoArticoli.riassunto_articoli()
 
 #Classifichiamo in Categoria gli articoli senza categoria (nuovi)
-classificazione.classificazioneNB.classificaNewArticle()
+#classificazione.classificazioneNB.classificaNewArticle()
 
 #database.reset_riassunti_articolo()

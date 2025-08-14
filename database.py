@@ -29,6 +29,8 @@ def creazioneDatabase():
         riassunto_breve TEXT,
         riassunto_lungo TEXT,
         categoria VARCHAR(250),
+        peso FLOAT,
+        sentiment FLOAT,
         FOREIGN KEY (id) REFERENCES articoli_meta(id) ON DELETE CASCADE
     );
     """)
