@@ -21,10 +21,10 @@ def classificaNewArticle():
     df = pd.DataFrame(dati, columns=['id', 'riassunto_lungo'])
 
     # Carica modello e vettorizzatore
-    with open('Classificazione/modello_naive_bayes.pkl', 'rb') as model_file:
+    with open('classificazione/modello_naive_bayes.pkl', 'rb') as model_file:
         model = pickle.load(model_file)
 
-    with open('Classificazione/vectorizer_tfidf.pkl', 'rb') as vectorizer_file:
+    with open('classificazione/vectorizer_tfidf.pkl', 'rb') as vectorizer_file:
         vectorizer = pickle.load(vectorizer_file)
 
     # Trasforma in TF-IDF

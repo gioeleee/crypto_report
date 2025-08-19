@@ -2,7 +2,7 @@
 
  TO DO:
  
-- Regressione per la generazione di peso e sentiment (regressione) dando in input titolo, riassunto_lungo e categoria (precedentemente creata con NB):
+- Regressione per la generazione di peso e sentiment (regressione) dando in input titolo, riassunto_lungo.
     Criteri adottati per la generazione da parte di chatgpt del dataset di addestramento:
         Restituirò:
             peso: un valore float tra 0.0 e 1.0 che rappresenta l'importanza dell'articolo
@@ -16,9 +16,6 @@
                 Negativo: 0.0 → 0.3 (problemi, crolli, hack, FUD)
                 Neutro: ≈ 0.4/0.6 (analisi oggettive, previsioni incerte)
                 Positivo: 0.7 → 1.0 (bullish, approvazioni, rally, adozione)
-
-- Aggiungere richiesta per chiedere il link dell' API perchè lo avviamo dopo altrimenti su colab se non vengono fatti i calcoli si interrompe l'esecuzione.
-Quindi si genera il link e lo si inserisce nella riga di comando come stringa.
 
 - Fare la creazione del report settimanale o in generale del report specificando il periodo
     Top good and bad news
@@ -35,6 +32,8 @@ DONE:
 - Addestramento di LLama3.2 per la generazione di riassunti
 - Addestramento di NB per la classificare le news (Classificazione)
 - Mettere estrazione del link originale ed estrazione del contenuto della pagina in un unica funzione
+- Aggiungere richiesta per chiedere il link dell' API perchè lo avviamo dopo altrimenti su colab se non vengono fatti i calcoli si interrompe l'esecuzione.
+Quindi si genera il link e lo si inserisce nella riga di comando come stringa.
 
 NOT DONE:
 - Aggiungere il fatto di cliccare sulla check per verificare se non si è un robot quando vengono ritrovati gli url originali degli articoli.

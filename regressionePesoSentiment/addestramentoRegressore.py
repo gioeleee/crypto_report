@@ -1,59 +1,78 @@
 import pandas as pd
-from sklearn.linear_model import Ridge
-from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sentence_transformers import SentenceTransformer
-import numpy as np
+from sklearn.metrics import mean_squared_error, r2_score
+from nltk.corpus import stopwords
 import joblib
+import scipy.sparse as sp
+import nltk
 
-# === 1. Caricamento dataset ===
-df = pd.read_csv("regressionePesoSentiment/datasetAddestramento.csv", sep=";")  # Adatta il separatore se diverso
-df = df.dropna(subset=["titolo", "riassunto_lungo", "peso", "sentiment"])
+# Scarica le stopwords italiane (solo la prima volta)
+# nltk.download('stopwords')
+italian_stopwords = stopwords.words('italian')
 
-# === 2. Caricamento modello di embedding ===
-model = SentenceTransformer("all-MiniLM-L6-v2")  # Leggero e veloce
+# === 1. Carica il dataset
+df = pd.read_csv('regressionePesoSentiment/datasetAddestramento.csv', delimiter='|')
 
-# === 3. Calcolo embedding pesati ===
-print("Calcolo degli embedding...")
+# === 2. Filtra righe valide
+df = df.dropna(subset=["titolo", "riassunto_breve", "peso", "sentiment"])
 
-def get_weighted_embedding(title, summary, alpha=0.7):
-    title_emb = model.encode(title)
-    summary_emb = model.encode(summary)
-    return alpha * title_emb + (1 - alpha) * summary_emb
+# === 3. TF-IDF separati per titolo e riassunto_lungo
+vectorizer_titolo = TfidfVectorizer(stop_words=italian_stopwords, max_features=2000)
+vectorizer_riassunto = TfidfVectorizer(stop_words=italian_stopwords, max_features=6000)
 
-X = np.array([
-    get_weighted_embedding(row["titolo"], row["riassunto_lungo"])
-    for _, row in df.iterrows()
-])
+X_titolo = vectorizer_titolo.fit_transform(df["titolo"])
+X_riassunto = vectorizer_riassunto.fit_transform(df["riassunto_breve"])
 
-y_peso = df["peso"].values
-y_sentiment = df["sentiment"].values
+# === 4. Applica peso maggiore al titolo
+title_weight = 1.5
+X_titolo_pesato = X_titolo * title_weight
 
-# === 4. Train-test split ===
-X_train, X_test, y_peso_train, y_peso_test, y_sent_train, y_sent_test = train_test_split(
+# === 5. Combina i due vettori
+X = sp.hstack([X_titolo_pesato, X_riassunto])
+
+# === 6. Target
+y_peso = df["peso"]
+y_sentiment = df["sentiment"]
+
+# === 7. Train-test split
+X_train, X_test, y_peso_train, y_peso_test, y_sentiment_train, y_sentiment_test = train_test_split(
     X, y_peso, y_sentiment, test_size=0.2, random_state=42
 )
 
-# === 5. Addestramento modelli ===
-print("Addestramento modello per 'peso'...")
-peso_model = Ridge(alpha=1.0)
-peso_model.fit(X_train, y_peso_train)
+# === 8. Modelli
+model_peso = RandomForestRegressor(random_state=42)
+model_sentiment = RandomForestRegressor(random_state=42)
 
-print("Addestramento modello per 'sentiment'...")
-sentiment_model = Ridge(alpha=1.0)
-sentiment_model.fit(X_train, y_sent_train)
+model_peso.fit(X_train, y_peso_train)
+model_sentiment.fit(X_train, y_sentiment_train)
 
-# === 6. Valutazione ===
-def evaluate(model, X_test, y_test, name):
-    y_pred = model.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-    print(f"\n{name} - MSE: {mse:.4f}, R²: {r2:.4f}")
+# === 9. Valutazione
+y_peso_pred = model_peso.predict(X_test)
+y_sentiment_pred = model_sentiment.predict(X_test)
 
-evaluate(peso_model, X_test, y_peso_test, "Peso")
-evaluate(sentiment_model, X_test, y_sent_test, "Sentiment")
+print(f"Peso - MSE: {mean_squared_error(y_peso_test, y_peso_pred):.4f}, R²: {r2_score(y_peso_test, y_peso_pred):.4f}")
+print(f"Sentiment - MSE: {mean_squared_error(y_sentiment_test, y_sentiment_pred):.4f}, R²: {r2_score(y_sentiment_test, y_sentiment_pred):.4f}")
 
-# === 7. Salvataggio modelli ===
-joblib.dump(peso_model, "peso_model.pkl")
-joblib.dump(sentiment_model, "sentiment_model.pkl")
-print("\nModelli salvati in: peso_model.pkl e sentiment_model.pkl")
+# === 10. Salvataggio modelli e vectorizer
+joblib.dump(model_peso, "regressionePesoSentiment/modello_peso.pkl")
+joblib.dump(model_sentiment, "regressionePesoSentiment/modello_sentiment.pkl")
+joblib.dump(vectorizer_titolo, "regressionePesoSentiment/vectorizer_titolo.pkl")
+joblib.dump(vectorizer_riassunto, "regressionePesoSentiment/vectorizer_riassunto.pkl")
+
+print("✅ Modelli e vectorizer salvati.")
+
+
+
+# === 11. Mostra un confronto tra input e output predetti
+X_test_indices = y_peso_test.index  # per mappare le predizioni agli articoli originali
+df_test = df.loc[X_test_indices].copy()
+
+df_test["peso_predetto"] = y_peso_pred
+df_test["sentiment_predetto"] = y_sentiment_pred
+
+# Mostra le prime 10 righe per esempio
+print("\n🎯 Confronto tra valori reali e predetti:")
+print(df_test[["peso", "peso_predetto", "sentiment", "sentiment_predetto"]].head(50))
+
