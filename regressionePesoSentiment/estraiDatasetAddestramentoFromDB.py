@@ -8,10 +8,10 @@ cursor = conn.cursor()
 
 # Query SQL
 query = """
-SELECT id, titolo, riassunto_breve, peso, sentiment
+SELECT id, titolo, riassunto_lungo, peso, sentiment
 FROM articoli
 WHERE titolo IS NOT NULL
-  AND (riassunto_breve IS NOT NULL AND riassunto_breve != 'NESSUN CONTENUTO')
+  AND (riassunto_lungo IS NOT NULL AND riassunto_lungo != 'NESSUN CONTENUTO')
   AND peso IS NOT NULL
   AND sentiment IS NOT NULL;
 """
