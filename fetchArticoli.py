@@ -14,55 +14,54 @@ import utilities
 import cleanHtml
 import uuid
 import pathlib
+import logging 
+import os
+import subprocess
 
 BASE_URL = "https://cryptopanic.com"
 
 
-# Crea e restituisce un'istanza di Chrome WebDriver configurata.
-# precedente
-def setup_chrome_driver2():
-    
-    # Inizializzia istanza opzioni di Chrome WebDriver
-    chrome_options = Options()
+# --- Logging applicativo: mostra solo WARNING/ERROR/CRITICAL (niente INFO/DEBUG) ---
+logging.basicConfig(
+    level=logging.WARNING,
+    format="%(levelname)s | %(message)s"
+)
+logger = logging.getLogger(__name__)
 
-    # Disattiva l'accelerazione hardware (opzionale, per maggiore compatibilità)
-    chrome_options.add_argument("--disable-gpu")
-    # Previene errori di sandboxing su alcune piattaforme Linux
-    chrome_options.add_argument("--no-sandbox")
-    # Imposta uno user-agent realistico per evitare blocchi da parte dei siti web
-    chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
+# --- Silenzia webdriver-manager ---
+os.environ["WDM_LOG"] = "0"
+os.environ["WDM_LOG_LEVEL"] = "0"
+logging.getLogger("WDM").setLevel(logging.CRITICAL)
+logging.getLogger("webdriver_manager").setLevel(logging.CRITICAL)
 
-    #Usa una cartella temporanea diversa per ogni esecuzione
-    chrome_options.add_argument(f"--user-data-dir=/tmp/chrome-user-data-{uuid.uuid4()}")
-
-    # (Facoltativo) Usa una cartella temporanea come profilo utente per sessioni isolate
-    #chrome_options.add_argument(f"--user-data-dir={tempfile.mkdtemp()}")
-    # Attiva modalità headless se necessario (non mostra il browser a schermo)
-    #chrome_options.add_argument("--headless=new") 
-
-    # Restituisce istanza ChromeDriver con le opzioni configurate
-    return webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-
-
-# attuale per bypassare verifica umana
+# Setup delle impostazioni di chrome driver e restituisce una istanza
 def setup_chrome_driver(profile_name="selenium-profile"):
     chrome_options = Options()
 
-    # Esegui in modalità "headed" (più affidabile per prime visite/consensi)
-    # chrome_options.add_argument("--headless=new")  # attivalo solo dopo aver stabilito i cookie
+    # Headed per affidabilità (ok così). Attiva headless solo se ti serve:
+    # chrome_options.add_argument("--headless=new")
 
-    # Evita sandbox solo in ambienti container
+    # Stabilità in ambienti container/CI
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-dev-shm-usage")
 
-    # User-Agent realistico (versione completa)
+    # Meno rumore da Chrome/Chromium
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-software-rasterizer")
+    chrome_options.add_argument("--log-level=3")       # 0=INFO, 3=ERROR
+    chrome_options.add_argument("--silent")
+    chrome_options.add_argument("--disable-logging")
+    chrome_options.add_experimental_option(
+        "excludeSwitches", ["enable-logging", "enable-automation"]
+    )
+    chrome_options.add_experimental_option("useAutomationExtension", False)
+
+    # UA e localizzazione
     chrome_options.add_argument(
         "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
         "AppleWebKit/537.36 (KHTML, like Gecko) "
         "Chrome/126.0.0.0 Safari/537.36"
     )
-
-    # Lingua/localizzazione
     chrome_options.add_argument("--lang=it-IT")
     chrome_options.add_experimental_option(
         "prefs", {
@@ -71,22 +70,22 @@ def setup_chrome_driver(profile_name="selenium-profile"):
             "profile.block_third_party_cookies": False,
         }
     )
-
-    # Viewport coerente
     chrome_options.add_argument("--window-size=1366,768")
 
-    # ✅ PROFILO PERSISTENTE (non cambiare ogni volta)
+    # Profilo persistente (evita re-verifiche umane)
     profile_dir = pathlib.Path.home() / ".selenium" / profile_name
     profile_dir.mkdir(parents=True, exist_ok=True)
     chrome_options.add_argument(f"--user-data-dir={profile_dir}")
 
-    # Avvio driver
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+    # 🔇 Azzera l’output del servizio Chromedriver (niente “DevTools listening…”, errori GPU, ecc.)
+    service = Service(
+        ChromeDriverManager().install(),
+        log_output=subprocess.DEVNULL  # richiede Selenium 4.6+
+    )
+
+    driver = webdriver.Chrome(service=service, options=chrome_options)
     driver.set_page_load_timeout(60)
     return driver
-
-
-
 
 
 # Esegue lo scroll e clicca 'Load more' fino a quando non ci sono più nuovi articoli.
@@ -276,7 +275,7 @@ def scraping_url_articoli(driver, cryptopanic_url):
         return None  # Nessuna nuova scheda aperta
 
     except Exception as e:
-        print(f"❌ Errore durante l'estrazione URL: {e}")
+        print(f"❌ Errore durante l'estrazione URL.")
         return None
 
 
@@ -328,7 +327,7 @@ def fetch_html_articolo(driver, url):
         return driver.page_source
 
     except Exception as e:
-        print(f"❌ Errore durante il download HTML da {url}: {e}")
+        print(f"❌ Errore durante il download HTML da {url}")
         return None
 
 
@@ -418,7 +417,7 @@ def fetch_url_e_html_articoli():
             driver.switch_to.window(original_window)
 
         except Exception as e:
-            print(f"❌ Errore durante l'accesso o estrazione: {e}")
+            print(f"❌ Errore durante l'accesso o estrazione.")
 
         # Step 2: Salvataggio dei dati
         if url_articolo:

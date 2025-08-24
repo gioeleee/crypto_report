@@ -170,3 +170,92 @@ def reset_riassunti_articolo():
         conn.commit()
     finally:
         conn.close()
+
+
+
+# === Classificazione: funzioni DB ===
+def get_articoli_senza_categoria():
+    """
+    Ritorna lista di tuple (id, riassunto_lungo) per articoli
+    con riassunto_lungo non NULL e categoria NULL.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, riassunto_lungo
+        FROM articoli
+        WHERE riassunto_lungo IS NOT NULL
+          AND categoria IS NULL
+    """)
+    dati = cursor.fetchall()
+    conn.close()
+    return dati
+
+
+def aggiorna_categoria_articolo(id_articolo: int, categoria: str):
+    """
+    Aggiorna la categoria di un singolo articolo.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE articoli
+        SET categoria = ?
+        WHERE id = ?
+    """, (categoria, id_articolo))
+    conn.commit()
+    conn.close()
+
+
+def aggiorna_categorie_articoli(updates):
+    """
+    Aggiornamento in batch. 'updates' è una lista di tuple (categoria, id).
+    Utile se vuoi fare un solo round-trip al DB.
+    """
+    if not updates:
+        return
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.executemany("""
+        UPDATE articoli
+        SET categoria = ?
+        WHERE id = ?
+    """, updates)
+    conn.commit()
+    conn.close()
+
+
+
+# === Peso & Sentiment: funzioni DB ===
+
+def get_articoli_senza_peso_sentiment_con_categoria():
+    """
+    Ritorna [(id, titolo, riassunto_lungo)] per articoli con categoria NON NULL
+    e peso/sentiment NULL (uno dei due o entrambi).
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, COALESCE(titolo, ''), COALESCE(riassunto_lungo, '')
+        FROM articoli
+        WHERE categoria IS NOT NULL
+          AND (peso IS NULL OR sentiment IS NULL)
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+
+def aggiorna_peso_sentiment_articolo(id_articolo: int, peso: float, sentiment: float):
+    """
+    Aggiorna entrambi i campi per l'articolo indicato.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        UPDATE articoli
+        SET peso = ?, sentiment = ?
+        WHERE id = ?
+    """, (peso, sentiment, id_articolo))
+    conn.commit()
+    conn.close()
