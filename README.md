@@ -42,3 +42,10 @@ NOT DONE:
 
 
 
+- Ok adesso nel database per ogni articolo c'è il titolo, data, riassunto breve, riassunto lungo, categoria, peso, sentiment.
+Sulla base di queste informazioni mi devi creare un file pdf intitolato Report settimanale mercato cryptovalute [data inzio] - [data fine] e deve contenere le seguenti sezioni:
+    1) Notizie più rilevanti:
+        - Contiene le top 5 notizie con peso maggiore siano esse di sentiment positivo o negativo e per queste notizie contiene titolo,data, riassunto lungo
+    2) Le top tre notizie con peso maggiore per ogni categoria (News di Mercato, Analisi e Prezzi - Innovazione e Nuovi Progetti - Sicurezzza, hackeraggi e Truffe - Adozione e Mainstreaming - Regolamentazione e Normative). Per queste notizie però comparirà solo titolo e riassunto breve.
+
+    Infine nel fondo della pagina deve comparire il fear & greed ndex calcolato sulla base di peso e sentiment assegnato ad ogni notizia.
