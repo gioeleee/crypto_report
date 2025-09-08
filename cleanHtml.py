@@ -25,7 +25,6 @@ def detect_main_language(text):
         return "unknown"
 
 
-
 #funzione per pulire l'html recuperando solo l'articolo
 def clean_html_content(html_content, similarity_threshold=0.35, h2_similarity_threshold=0.35):
     """

@@ -49,3 +49,21 @@ Sulla base di queste informazioni mi devi creare un file pdf intitolato Report s
     2) Le top tre notizie con peso maggiore per ogni categoria (News di Mercato, Analisi e Prezzi - Innovazione e Nuovi Progetti - Sicurezzza, hackeraggi e Truffe - Adozione e Mainstreaming - Regolamentazione e Normative). Per queste notizie però comparirà solo titolo e riassunto breve.
 
     Infine nel fondo della pagina deve comparire il fear & greed ndex calcolato sulla base di peso e sentiment assegnato ad ogni notizia.
+
+
+Devo generare la documentazione per la mia tesi di laurea, tieni conto che devo scrivere circa 80/100 pagine.
+La mia tesi si intitola "Analisi automatizzata del mercato crypto attraverso tecniche di intelligenza artificiale." e quello che fa tramite script python è:
+1) Raccolta delle notizie tramite web scarpaing (fonte: cryptopanic)
+2) Addestramento di LLM (LLama3.2) e utilizzato per generazione di riassunti lunghi e brevi delle notizie
+3) Classificazione delle news prima anando a dividere le news con un classificatore non supervisionato, dopo che il classificatore non supervisionato ha generato le ipotetiche categorie le ho etichettate e infine addestrato un classificatore superivisonato (NB) per generare le categorie delle nuove news.
+4) Generato sentiment e peso andando ad addestrare un regressore
+5) Generato il report settimanale + fear & greed index.
+
+Allego un esempio di tesi fatta da un mio collega per darti un idea di come deve essere strutturata e allego anche i mio codice python attuale in modo tale che puoi capire bene come funziona.
+
+
+
+MODIFICHE DA FARE:
+DB:
+    - Modificare campo articolo_completo_html in articolo_completo
+    - Rimuovere campo categoria in meta_articoli e lasciarlo solo in articoli
