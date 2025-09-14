@@ -115,3 +115,5 @@ def clean_html_content(html_content, similarity_threshold=0.35, h2_similarity_th
         return ""
 
     return "\n".join(filtered_text)
+
+

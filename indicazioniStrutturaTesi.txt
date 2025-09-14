@@ -1,0 +1,28 @@
+📄 Formattazione del testo
+	Carattere: Times New Roman, corpo 12 pt (classico e accademico).
+	Interlinea: 1,5 (o doppia se richiesto dalle linee guida).
+	Giustificazione: testo giustificato su entrambi i margini.
+
+Rientri:
+	Paragrafo: rientro prima riga di 0,5–1 cm.
+	Niente rientri nel titolo dei capitoli o sottosezioni.
+
+Spaziatura:
+	Dopo i paragrafi: 6 pt.
+	Nessuno spazio prima del paragrafo (a meno che tu non voglia separazioni più nette).
+
+📑 Struttura dei titoli
+	Capitoli principali: in grassetto, dimensione 18 pt, numerati (es. Capitolo 1).
+	Sezioni e sottosezioni: grassetto o corsivo, corpo 14 pt, numerazione tipo 1.1, 1.2 ecc.
+
+
+📏 Margini del foglio
+	Margine superiore: 3 cm
+	Margine inferiore: 3 cm
+	Margine sinistro: 3,5 cm (per rilegatura)
+	Margine destro: 3 cm
+
+📚 Altri dettagli utili
+	Numerazione delle pagine: in basso, centrata o a destra.
+	Note a piè di pagina: corpo 10 pt, singola spaziatura.
+	Citazioni lunghe: stacca dal testo, rientro di 1 cm, corpo 11 pt, senza virgolette.
